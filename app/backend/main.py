@@ -1,22 +1,33 @@
-from fastapi import FastAPI
+from fastapi import FastAPI , HTTPException
 from app.backend.core.config import settings
-from app.backend.db.session import engine
+from app.backend.db.session import engine , SessionLocal
 from app.backend.db.base import Base
-
+from app.backend.routes.elves import router as elf_router
+from fastapi.middleware.cors import CORSMiddleware
 
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Tables created successfully.")
+    except Exception as e:
+        print("Error creating tables:", e)
 
 
 def start_application():
     app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     create_tables()
     return app
-
 
 app = start_application()
 
 
-@app.get("/")
-def home():
-    return {"msg": "Hello FastAPI🚀"}
+
+
+app.include_router(elf_router)
