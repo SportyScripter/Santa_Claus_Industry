@@ -1,7 +1,18 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel , Field
 
 
 #properties required during user creation
+
+class Elf(BaseModel):
+    id: int
+    name: str
+    country: str
+    available: bool
 class ElfCreate(BaseModel):
     name: str
-    Country: str
+    country: str
+    pesel: str
+
+class ElfDelete(BaseModel):
+    id: int
+
