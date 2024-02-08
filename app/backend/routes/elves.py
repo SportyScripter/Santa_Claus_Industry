@@ -1,17 +1,15 @@
 from fastapi import Depends, APIRouter, HTTPException
 from sqlalchemy.orm import Session
-from app.backend.crud.elf import create_elf , delete_elf
-from app.backend.schemas.elf import ElfCreate , ElfDelete
+from app.backend.crud.elf import create_elf, delete_elf, check_if_elf_exists, go_on_holiday, get_elf_pesel, \
+    change_available_status
+from app.backend.schemas.elf import ElfCreate, ElfDelete
 from app.backend.db.models.elf import Elf
 from app.backend.db.session import get_db
 
+elf_router = APIRouter()
 
-router = APIRouter()
 
-def check_if_elf_exists(db: Session, elf_pesel: str):
-    return db.query(Elf).filter(Elf.pesel == elf_pesel).first()
-
-@router.post("/elves/{name}/{country}/{pesel}")
+@elf_router.post("/elves/add_elf/{name}/{country}/{pesel}")
 def create_elf_from_params(name: str, country: str, pesel: str, db: Session = Depends(get_db)):
     try:
         if check_if_elf_exists(db, pesel):
@@ -35,8 +33,23 @@ def create_elf_from_params(name: str, country: str, pesel: str, db: Session = De
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/elves/{elf_id}")
+
+@elf_router.delete("/elves/delete_elf/{elf_id}")
 def delete_delete_elf(elf_id: int, db: Session = Depends(get_db)):
     delete_elf(db, elf_id)
     return {"message": "Elf deleted successfully"}
 
+
+@elf_router.put("/elves/go_on_holidays/{elf_id}/{duration_time}")
+def go_on_holiday_from_params(elf_id: int, duration_time: int, db: Session = Depends(get_db)):
+    return go_on_holiday(db, elf_id, duration_time)
+
+
+@elf_router.get("/elves/get_pesel/{elf_id}")
+def get_elf_pesel_from_params(elf_id: int, db: Session = Depends(get_db)):
+    return get_elf_pesel(db, elf_id)
+
+
+@elf_router.put("/elves/change_status/{elf_id}/{status}")
+def change_available_status_from_params(elf_id: int, status: bool, db: Session = Depends(get_db)):
+    return change_available_status(db, elf_id, status)
